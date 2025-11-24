@@ -17,8 +17,10 @@ ENV/
 *.db-wal
 *.db-shm
 
+# Data directory (user-specific generated content)
+data/
+
 # Temporary files
-data/temp/
 *.tmp
 
 # Audio test files
