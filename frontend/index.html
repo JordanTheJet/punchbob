@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punching Bag - Trash Talk</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/settings.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💪 Trash-Talking Punching Bag</h1>
+            <p class="subtitle">Your AI-powered workout rival</p>
+        </header>
+
+        <!-- Character Selection Screen -->
+        <div id="screen-selection" class="screen active">
+            <h2>Select Your Rival</h2>
+
+            <div id="character-grid" class="character-grid">
+                <!-- Characters loaded dynamically -->
+            </div>
+
+            <button class="btn btn-primary" id="btn-create-character">
+                + Create New Rival
+            </button>
+        </div>
+
+        <!-- Character Creation Screen -->
+        <div id="screen-create" class="screen">
+            <h2>Create Your Rival</h2>
+
+            <form id="form-create-character">
+                <div class="form-group">
+                    <label for="char-name">Name *</label>
+                    <input type="text" id="char-name" required placeholder="Boss Steve" maxlength="30">
+                </div>
+
+                <div class="form-group">
+                    <label for="char-relationship">Relationship *</label>
+                    <select id="char-relationship" required>
+                        <option value="boss">Boss</option>
+                        <option value="coworker">Coworker</option>
+                        <option value="rival">Rival</option>
+                        <option value="ex">Ex</option>
+                        <option value="trainer">Trainer</option>
+                        <option value="fictional">Fictional Character</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="char-personality">Personality *</label>
+                    <input type="text" id="char-personality" required
+                           placeholder="arrogant, condescending, sarcastic">
+                    <small>Examples: arrogant, sarcastic, motivating, brutal</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="char-intensity">Intensity: <span id="intensity-value">3</span>/5</label>
+                    <input type="range" id="char-intensity" min="1" max="5" value="3" step="1">
+                    <div class="intensity-labels">
+                        <span>Playful</span>
+                        <span>Competitive</span>
+                        <span>Ruthless</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="char-voice">Voice</label>
+                    <select id="char-voice" required>
+                        <option value="">Loading voices...</option>
+                    </select>
+                    <small>Choose from preset voices or your custom ElevenLabs voices</small>
+                    <button type="button" class="btn btn-secondary" id="btn-clone-voice" style="margin-top: 10px;">
+                        🎤 Clone New Voice
+                    </button>
+                </div>
+
+                <!-- Voice Cloning Modal (hidden by default) -->
+                <div id="voice-clone-modal" style="display: none; margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 10px; border: 2px solid #667eea;">
+                    <h4 style="margin-top: 0;">Clone Voice from Audio Sample</h4>
+
+                    <div class="form-group">
+                        <label for="clone-voice-name">Voice Name</label>
+                        <input type="text" id="clone-voice-name" placeholder="Jordan's Voice 3">
+                        <small>Give this cloned voice a name</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clone-voice-sample">Upload Voice Sample</label>
+                        <input type="file" id="clone-voice-sample" accept="audio/*">
+                        <small>Upload a clear 30-60 second audio sample (MP3, WAV, M4A)</small>
+                    </div>
+
+                    <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                        <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
+                            <input type="checkbox" id="clone-consent-checkbox" style="margin-right: 10px; width: auto;">
+                            <span style="font-size: 0.9rem;">I confirm I have explicit consent to clone this voice</span>
+                        </label>
+                        <small style="margin-left: 30px; color: #856404;">Required by ElevenLabs policy</small>
+                    </div>
+
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-primary" id="btn-submit-clone">Clone Voice</button>
+                        <button type="button" class="btn btn-secondary" id="btn-cancel-clone">Cancel</button>
+                    </div>
+
+                    <div id="clone-status" style="margin-top: 10px; padding: 10px; border-radius: 5px; display: none;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="char-description">Description (optional)</label>
+                    <textarea id="char-description" rows="3"
+                              placeholder="Additional context about this character..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-create">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Generate Character</button>
+                </div>
+            </form>
+
+            <!-- Progress indicator -->
+            <div id="generation-progress" class="progress-container" style="display: none;">
+                <h3>Creating Your Rival...</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <p id="progress-message">Initializing...</p>
+                <p class="progress-time" id="progress-time">Estimated: 45 seconds</p>
+            </div>
+        </div>
+
+        <!-- Workout Screen -->
+        <div id="screen-workout" class="screen">
+            <div class="workout-header">
+                <h2 id="workout-character-name">Fighting: Boss Steve</h2>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <select id="feedback-mode" class="btn" style="padding: 10px;">
+                        <option value="grunts">🎤 Voice Grunts</option>
+                        <option value="hit_sounds">💥 Hit Sounds</option>
+                        <option value="silent">🔇 Silent</option>
+                    </select>
+                    <button class="btn" id="btn-toggle-settings">⚙️ Settings</button>
+                    <button class="btn btn-danger" id="btn-end-workout">End Workout</button>
+                </div>
+            </div>
+
+            <!-- Debug Panel -->
+            <div id="debug-panel" class="debug-panel">
+                <h4>🔬 Sensor Debug (Live Data)</h4>
+                <div id="sensor-data" style="font-family: monospace; font-size: 0.9rem;">
+                    <div>Punch Count: <span id="debug-punch-count">-</span></div>
+                    <div>Monitoring: <span id="debug-monitoring">-</span></div>
+                    <div>Last Punch: <span id="debug-last-punch">-</span></div>
+                    <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+                        <div style="font-weight: bold;">Raw Sensor Data:</div>
+                        <div id="debug-raw-data">Waiting for data...</div>
+                    </div>
+                </div>
+                <button class="btn" id="btn-toggle-debug" style="margin-top: 10px;">Hide Debug</button>
+            </div>
+
+            <!-- Sensitivity Settings Panel -->
+            <div id="settings-panel" class="settings-panel" style="display: none;">
+                <h3>🎯 Punch Sensitivity Settings</h3>
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <label for="setting-hit-start">Hit Start Threshold (g)</label>
+                        <input type="number" id="setting-hit-start" step="0.1" min="0.1" max="5.0" value="0.7">
+                        <small>Minimum force to detect punch start</small>
+                    </div>
+                    <div class="setting-item">
+                        <label for="setting-hit-end">Hit End Threshold (g)</label>
+                        <input type="number" id="setting-hit-end" step="0.1" min="0.1" max="2.0" value="0.3">
+                        <small>Force below which punch is considered done</small>
+                    </div>
+                    <div class="setting-item">
+                        <label for="setting-end-samples">End Samples</label>
+                        <input type="number" id="setting-end-samples" min="1" max="20" value="5">
+                        <small>Consecutive low samples needed to end punch</small>
+                    </div>
+                    <div class="setting-item">
+                        <label for="setting-max-force">Max Force (g)</label>
+                        <input type="number" id="setting-max-force" step="0.5" min="1.0" max="10.0" value="4.0">
+                        <small>Maximum expected force (for normalization)</small>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button class="btn btn-primary" id="btn-save-settings">💾 Save Settings</button>
+                    <button class="btn" id="btn-reset-settings">🔄 Reset to Default</button>
+                </div>
+                <div id="settings-status" style="margin-top: 10px; font-size: 0.9rem;"></div>
+            </div>
+
+            <div class="workout-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-punches">0</div>
+                    <div class="stat-label">Punches</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-avg-force">0%</div>
+                    <div class="stat-label">Avg Force</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-max-force">0%</div>
+                    <div class="stat-label">Max Force</div>
+                </div>
+            </div>
+
+            <div class="trash-talk-display">
+                <p id="last-trash-talk">"Let's see what you got!"</p>
+            </div>
+
+            <div class="punch-history">
+                <h3>Recent Punches</h3>
+                <div id="punch-list"></div>
+            </div>
+
+            <!-- Simulate Punch (for testing without hardware) -->
+            <div class="test-controls">
+                <button class="btn btn-secondary" id="btn-simulate-punch">Simulate Punch (Test)</button>
+            </div>
+        </div>
+
+        <!-- Character Stats Screen -->
+        <div id="screen-stats" class="screen">
+            <h2>Character Statistics</h2>
+            <div id="stats-content">
+                <!-- Loaded dynamically -->
+            </div>
+            <button class="btn btn-secondary" id="btn-back-stats">Back</button>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
