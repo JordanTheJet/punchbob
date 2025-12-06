@@ -52,18 +52,25 @@ function renderCharacterGrid() {
     grid.innerHTML = '';
 
     if (characters.length === 0) {
-        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #888;">No characters yet. Create your first rival!</p>';
+        grid.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">🥊</div>
+                <div class="empty-state-text">No Rivals Yet</div>
+                <p style="margin-top: 10px; color: var(--text-muted);">Create your first fighter to begin training!</p>
+            </div>
+        `;
         return;
     }
 
-    characters.forEach(char => {
+    characters.forEach((char, index) => {
         const card = document.createElement('div');
         card.className = 'character-card';
+        card.style.animationDelay = `${index * 0.1}s`;
         card.innerHTML = `
             <div class="char-emoji">${getCharacterEmoji(char.relationship)}</div>
             <div class="char-name">${char.name}</div>
             <div class="char-relationship">${capitalizeFirst(char.relationship)}</div>
-            <div class="char-stats">${char.total_sessions || 0} sessions</div>
+            <div class="char-stats">${char.total_sessions || 0} fights</div>
         `;
         card.onclick = () => startWorkoutWithCharacter(char.id);
         grid.appendChild(card);
@@ -347,26 +354,30 @@ function updateIntensityDisplay() {
 
 function showModeChangeNotification(mode) {
     const modeNames = {
-        'grunts': '🎤 Voice Grunts',
-        'hit_sounds': '💥 Hit Sounds',
-        'silent': '🔇 Silent'
+        'grunts': 'Voice Grunts',
+        'hit_sounds': 'Hit Sounds',
+        'silent': 'Silent Mode'
     };
 
     const notification = document.createElement('div');
+    notification.className = 'mode-notification';
     notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
-        background: #667eea;
+        background: linear-gradient(180deg, #ff2a6d 0%, #cc2259 100%);
         color: white;
-        padding: 15px 25px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        padding: 18px 30px;
+        border-radius: 6px;
+        box-shadow: 0 0 30px rgba(255, 42, 109, 0.5), 0 10px 40px rgba(0,0,0,0.5);
         z-index: 9999;
         animation: slideIn 0.3s ease;
-        font-weight: 600;
+        font-family: 'Russo One', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
     `;
-    notification.textContent = `Switched to ${modeNames[mode]}`;
+    notification.textContent = `${modeNames[mode]}`;
 
     document.body.appendChild(notification);
 
@@ -745,5 +756,149 @@ style.textContent = `
             opacity: 0;
         }
     }
+
+    @keyframes screenShake {
+        0%, 100% { transform: translateX(0) translateY(0); }
+        10% { transform: translateX(-8px) translateY(-4px); }
+        20% { transform: translateX(8px) translateY(4px); }
+        30% { transform: translateX(-6px) translateY(-2px); }
+        40% { transform: translateX(6px) translateY(2px); }
+        50% { transform: translateX(-4px) translateY(-1px); }
+        60% { transform: translateX(4px) translateY(1px); }
+        70% { transform: translateX(-2px) translateY(0px); }
+        80% { transform: translateX(2px) translateY(0px); }
+        90% { transform: translateX(-1px) translateY(0px); }
+    }
+
+    @keyframes impactFlash {
+        0% { opacity: 0.6; }
+        100% { opacity: 0; }
+    }
+
+    @keyframes statBounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+
+    @keyframes comicPow {
+        0% {
+            transform: scale(0) rotate(-15deg);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.5) rotate(5deg);
+            opacity: 1;
+        }
+        100% {
+            transform: scale(2) rotate(0deg);
+            opacity: 0;
+        }
+    }
+
+    .screen-shake {
+        animation: screenShake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    .stat-bounce {
+        animation: statBounce 0.3s ease-out;
+    }
+
+    .comic-pow {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Bangers', cursive;
+        font-size: 8rem;
+        color: #f9f002;
+        text-shadow:
+            0 0 20px rgba(249, 240, 2, 0.8),
+            4px 4px 0 #ff2a6d,
+            8px 8px 0 rgba(0,0,0,0.3);
+        z-index: 9999;
+        pointer-events: none;
+        animation: comicPow 0.6s ease-out forwards;
+    }
+
+    .trash-talk-animate {
+        animation: pulse 0.5s ease-out;
+    }
 `;
 document.head.appendChild(style);
+
+// ===== Impact Effects =====
+
+function triggerPunchImpact(tier) {
+    // Screen shake intensity based on tier
+    const shakeIntensity = tier >= 4 ? 'heavy' : tier >= 2 ? 'medium' : 'light';
+
+    // Flash effect
+    const flash = document.getElementById('impact-flash');
+    if (flash) {
+        const flashColors = {
+            1: 'rgba(107, 114, 128, 0.3)',  // Gray
+            2: 'rgba(59, 130, 246, 0.4)',   // Blue
+            3: 'rgba(16, 185, 129, 0.4)',   // Green
+            4: 'rgba(245, 158, 11, 0.5)',   // Orange
+            5: 'rgba(239, 68, 68, 0.6)'     // Red
+        };
+        flash.style.background = flashColors[tier] || 'white';
+        flash.style.animation = 'impactFlash 0.2s ease-out';
+        setTimeout(() => {
+            flash.style.animation = '';
+        }, 200);
+    }
+
+    // Screen shake
+    const workoutScreen = document.getElementById('screen-workout');
+    if (workoutScreen && tier >= 2) {
+        workoutScreen.classList.add('screen-shake');
+        setTimeout(() => {
+            workoutScreen.classList.remove('screen-shake');
+        }, 400);
+    }
+
+    // Comic POW effect for high tier punches
+    if (tier >= 4) {
+        const powWords = ['POW!', 'BAM!', 'WHAM!', 'CRACK!', 'BOOM!'];
+        const powElement = document.createElement('div');
+        powElement.className = 'comic-pow';
+        powElement.textContent = powWords[Math.floor(Math.random() * powWords.length)];
+        document.body.appendChild(powElement);
+        setTimeout(() => powElement.remove(), 600);
+    }
+
+    // Stat card bounce
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach(card => {
+        card.classList.add('stat-bounce');
+        setTimeout(() => card.classList.remove('stat-bounce'), 300);
+    });
+}
+
+// Override displayTrashTalk to add animation
+const originalDisplayTrashTalk = displayTrashTalk;
+displayTrashTalk = function(text) {
+    const display = document.getElementById('last-trash-talk');
+
+    if (!text || text === 'undefined') {
+        return;
+    }
+
+    display.textContent = `"${text}"`;
+
+    // Remove and re-add animation
+    display.parentElement.classList.remove('trash-talk-animate');
+    void display.parentElement.offsetWidth; // Force reflow
+    display.parentElement.classList.add('trash-talk-animate');
+};
+
+// Override addPunchToHistory to trigger impact effects
+const originalAddPunchToHistory = addPunchToHistory;
+addPunchToHistory = function(punch) {
+    // Trigger visual effects
+    triggerPunchImpact(punch.tier);
+
+    // Call original function
+    originalAddPunchToHistory(punch);
+};
